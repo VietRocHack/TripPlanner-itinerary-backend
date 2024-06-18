@@ -163,3 +163,9 @@ cython_debug/
 
 # Private keys and stuff
 settings.py
+
+# AWS stuff
+.aws/
+
+# VSCode stuff
+.vscode/
