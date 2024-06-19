@@ -1,0 +1,55 @@
+name: Deploy Flask App to EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment on push to the main branch
+
+env:
+  HOSTING_DIR: /home/ec2-user/tripplanner-backend/itinerary
+
+jobs:
+  deploy:
+    runs-on: self-hosted  # Specify that the job runs on a self-hosted runner
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11.5'  # Specify the Python version you need
+
+    - name: Install pip
+      run: python -m pip install --upgrade pip
+
+    - name: Clean hosting folder
+      run: |
+        rm -rf $HOSTING_DIR/host
+        mkdir $HOSTING_DIR/host
+
+    - name: Move files to hosting folder
+      run: |
+        cp -r ./* $HOSTING_DIR/host
+        cd $HOSTING_DIR/host
+
+    - name: Create virtual env and install requirements in hosting folder
+      run: |
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+
+    - name: Copy env file to host
+      run: cp $HOSTING_DIR/require.py $HOSTING_DIR/host/
+    
+    - name: Install Guincorn WSGI Server
+      run: pip install gunicorn
+
+    - name: Deactivate virtual env
+      run: deactivate
+
+    - name: Reload/start WSGI service
+      run: |
+        sudo systemctl daemon-reload tripplanner-itinerary
+        sudo systemctl start tripplanner-itinerary
+        sudo systemctl enable tripplanner-itinerary
