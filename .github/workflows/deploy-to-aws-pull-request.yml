@@ -39,7 +39,7 @@ jobs:
     - name: Move files to hosting folder and service files to /etc/systemd/system
       run: |
         cp -r ./* $HOSTING_DIR/$STAGE
-        sudo rm /etc/systemd/system/$SERVICE_NAME.service
+        sudo rm -f /etc/systemd/system/$SERVICE_NAME.service
         sudo cp .github/workflows/$SERVICE_NAME.service /etc/systemd/system/
 
     - name: Create virtual env and install requirements in hosting folder

@@ -1,5 +1,5 @@
 [Unit]
-Description=Gunicorn instance for TripPlanner itinerary backend
+Description=Gunicorn instance for TripPlanner itinerary backend, development server
 After=network.target
 
 [Service]
