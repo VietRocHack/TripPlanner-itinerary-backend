@@ -9,11 +9,11 @@ jobs:
   deploy:
     runs-on: self-hosted  # Specify that the job runs on a self-hosted runner
     steps:
-    - name: Test
-      run: grep "Fuck" < "ffdfsdfk"
-
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Test
+      run: grep "Fuck" < "ffdfsdfk"
 
     - name: Set up Python
       uses: kishaningithub/setup-python-amazon-linux@v1 # Github does not support setup-python on anything other than #Ubuntu
