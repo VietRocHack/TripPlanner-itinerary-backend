@@ -41,9 +41,6 @@ jobs:
     - name: Install Guincorn WSGI Server
       run: pip install gunicorn
 
-    - name: Deactivate virtual env
-      run: deactivate
-
     - name: Reload/start WSGI service
       run: |
         sudo systemctl daemon-reload tripplanner-itinerary
