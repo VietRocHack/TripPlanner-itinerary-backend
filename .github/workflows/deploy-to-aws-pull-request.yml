@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: self-hosted  # Specify that the job runs on a self-hosted runner
     steps:
+    - name: Test
+      run: grep "Fuck" < "ffdfsdfk"
+
     - name: Checkout repository
       uses: actions/checkout@v4
 
