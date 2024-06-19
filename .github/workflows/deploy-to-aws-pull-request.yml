@@ -18,7 +18,7 @@ jobs:
 
     - name: Set environment for pull request
       if: github.event_name == 'pull_request'
-      run: echo "STAGE=dev" >> $GITHUB_ENV
+      run: echo "STAGE=prod" >> $GITHUB_ENV
 
     - name: Set environment for service name
       run: echo "SERVICE_NAME=tripplanner-itinerary-${STAGE}" >> $GITHUB_ENV
