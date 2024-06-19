@@ -40,7 +40,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Copy env file to host
-      run: cp $HOSTING_DIR/require.py $HOSTING_DIR/host/
+      run: cp $HOSTING_DIR/settings.py $HOSTING_DIR/host/
     
     - name: Install Guincorn WSGI Server
       run: pip install gunicorn
