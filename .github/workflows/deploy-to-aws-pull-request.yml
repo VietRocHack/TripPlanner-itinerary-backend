@@ -49,7 +49,7 @@ jobs:
       run: |
           sleep 5
           systemctl status tripplanner-itinerary | grep "Active:"
-          if systemctl status tripplanner-itinerary | grep "active (running)"; then
+          if ! systemctl status tripplanner-itinerary | grep "active (running)"; then
             systemctl status tripplanner-itinerary
             echo "::error::Itinerary backend service encounters an error, check systemctl log to see what went wrong"
             exit 1
