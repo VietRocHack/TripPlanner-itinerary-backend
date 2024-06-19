@@ -35,6 +35,9 @@ jobs:
         source venv/bin/activate
         pip install -r requirements.txt
         pip install gunicorn
+
+    - name: Copy settings file to host
+      run: cp $HOSTING_DIR/settings.py $HOSTING_DIR/host/
     
     - name: Reload/start WSGI service
       run: |
@@ -43,10 +46,11 @@ jobs:
         sudo systemctl enable tripplanner-itinerary
 
     - name: Verify service is running
-      run: | 
+      run: |
+          sleep 5
           systemctl status tripplanner-itinerary | grep "Loaded:"
           systemctl status tripplanner-itinerary | grep "Active:"
-          if ! systemctl status tripplanner-itinerary | grep "active (running)"; then
+          if systemctl status tripplanner-itinerary | grep "active (running)"; then
             systemctl status tripplanner-itinerary
             echo "::error::Itinerary backend service encounters an error, check systemctl log to see what went wrong"
             exit 1
