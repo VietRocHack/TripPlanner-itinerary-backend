@@ -46,4 +46,9 @@ jobs:
         sudo systemctl enable tripplanner-itinerary
 
     - name: Verify service is running
-      run: systemctl status tripplanner-itinerary | grep "active (running)"
+      run: | 
+          if ! systemctl status tripplanner-itinerary | grep -q "active (running)"; then
+            systemctl status tripplanner-itinerary
+            echo "::error::Itinerary backend service encounters an error, check systemctl log to see what went wrong"
+            exit 1
+          fi
