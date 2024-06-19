@@ -45,4 +45,6 @@ jobs:
         sudo systemctl daemon-reload
         sudo systemctl start tripplanner-itinerary
         sudo systemctl enable tripplanner-itinerary
-        sudo systemctl status tripplanner-itinerary
+
+    - name: Verify service is running
+      run: systemctl status tripplanner-itinerary | grep "active (running)"
