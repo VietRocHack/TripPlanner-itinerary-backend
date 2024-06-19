@@ -1,9 +1,6 @@
 name: Deploy Flask App to EC2
 
-on:
-  push:
-    branches:
-      - main  # Trigger deployment on push to the main branch
+on: pull_request
 
 env:
   HOSTING_DIR: /home/ec2-user/tripplanner-backend/itinerary
