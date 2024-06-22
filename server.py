@@ -37,7 +37,7 @@ Use this call to test connection
 @app.route("/")
 @cross_origin()
 def index():
-    return jsonify("Hello world"), http_ok
+    return jsonify("Hello world dev"), http_ok
 
 '''
 In theory, should be deprecated soon. Please use generate_itinerary_v2
@@ -126,4 +126,4 @@ def get_itinerary():
 
 
 if __name__ == "__main__":
-    app.run(port=8000)
+    app.run(host="0.0.0.0")
