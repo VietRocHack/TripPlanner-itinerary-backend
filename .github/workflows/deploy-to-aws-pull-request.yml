@@ -10,6 +10,7 @@ on:
 
 env:
   HOSTING_DIR: /home/ec2-user/tripplanner-backend/itinerary
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 jobs:
   deploy:
