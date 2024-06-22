@@ -74,5 +74,5 @@ jobs:
           sleep 10
           curl -f http://0.0.0.0:$PORT || 
           (echo "::error::Itinerary backend service encounters an error, check systemctl log to see what went wrong" &&
-            systemctl status $SERVICE_NAME &&
+            journalctl -u $SERVICE_NAME -n 20 &&
             exit 1)
