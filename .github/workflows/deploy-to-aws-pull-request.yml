@@ -20,11 +20,15 @@ jobs:
 
     - name: Set environment for merge to main branch
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: echo "STAGE=prod" >> $GITHUB_ENV
+      run: |
+        echo "STAGE=prod" >> $GITHUB_ENV
+        echo "PORT=8000" >> $GITHUB_ENV
 
     - name: Set environment for pull request
       if: github.event_name == 'pull_request'
-      run: echo "STAGE=dev" >> $GITHUB_ENV
+      run: |
+        echo "STAGE=dev" >> $GITHUB_ENV
+        echo "PORT=8001" >> $GITHUB_ENV
 
     - name: Set environment for service name
       run: echo "SERVICE_NAME=tripplanner-itinerary-${STAGE}" >> $GITHUB_ENV
@@ -67,10 +71,8 @@ jobs:
 
     - name: Verify service is running
       run: |
-          sleep 5
-          systemctl status $SERVICE_NAME | grep "Active:"
-          if ! systemctl status $SERVICE_NAME | grep "active (running)"; then
-            systemctl status $SERVICE_NAME
-            echo "::error::Itinerary backend service encounters an error, check systemctl log to see what went wrong"
-            exit 1
-          fi
+          sleep 10
+          curl -f http://0.0.0.0:$PORT || 
+          (echo "::error::Itinerary backend service encounters an error, check systemctl log to see what went wrong" &&
+            systemctl status $SERVICE_NAME &&
+            exit 1)
