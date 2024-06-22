@@ -10,7 +10,6 @@ on:
 
 env:
   HOSTING_DIR: /home/ec2-user/tripplanner-backend/itinerary
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 jobs:
   deploy:
@@ -61,8 +60,10 @@ jobs:
         pip install -r requirements.txt
         pip install gunicorn
 
-    - name: Copy settings file to host
-      run: cp $HOSTING_DIR/settings.py $HOSTING_DIR/$STAGE/
+    - name: Setup .env file
+      run: |
+        cd $HOSTING_DIR/$STAGE/
+        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
     
     - name: Reload/start WSGI service
       run: |
