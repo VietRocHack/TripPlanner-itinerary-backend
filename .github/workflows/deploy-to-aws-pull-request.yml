@@ -60,12 +60,15 @@ jobs:
         pip install -r requirements.txt
         pip install gunicorn
 
-    - name: Copy settings file to host
-      run: cp $HOSTING_DIR/settings.py $HOSTING_DIR/$STAGE/
+    - name: Setup .env file
+      run: |
+        cd $HOSTING_DIR/$STAGE/
+        echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
     
     - name: Reload/start WSGI service
       run: |
         sudo systemctl daemon-reload
+        sudo systemctl stop $SERVICE_NAME
         sudo systemctl start $SERVICE_NAME
         sudo systemctl enable $SERVICE_NAME
 
@@ -73,6 +76,6 @@ jobs:
       run: |
           sleep 10
           curl -f http://0.0.0.0:$PORT || 
-          (echo "::error::Itinerary backend service encounters an error, check systemctl log to see what went wrong" &&
-            systemctl status $SERVICE_NAME &&
+          (echo "::error::Itinerary backend service encounters an error, check below log to see what went wrong" &&
+            journalctl -u $SERVICE_NAME -n 50 &&
             exit 1)

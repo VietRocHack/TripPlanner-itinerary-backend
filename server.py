@@ -23,7 +23,7 @@ client = OpenAI()
 model = "gpt-3.5-turbo"
 
 # AWS DynamoDB support
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
 itinerary_table = dynamodb.Table('Itineraries')
 
 # HTTP codes
@@ -126,4 +126,4 @@ def get_itinerary():
 
 
 if __name__ == "__main__":
-    app.run(port=8000)
+    app.run()
