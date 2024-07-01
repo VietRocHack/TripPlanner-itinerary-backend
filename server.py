@@ -21,7 +21,7 @@ client = OpenAI()
 MODEL = "gpt-3.5-turbo"
 
 # AWS DynamoDB support
-dynamodb = boto3.resource('dynamodb')
+dynamodb = boto3.resource('dynamodb', server="us-east-1")
 itinerary_table = dynamodb.Table('Itineraries')
 
 # HTTP codes
