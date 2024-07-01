@@ -34,7 +34,9 @@ HTTP_NOT_IMPLEMENTED = 501
 # Video analysis metadata
 NUM_FRAMES_TO_SAMPLE = 3
 
-# API calls setups
+'''
+API calls setups
+'''
 
 # Get the first completion of the call
 def openai_api_call(user_prompt, system_prompt):
