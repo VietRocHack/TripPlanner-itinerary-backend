@@ -6,10 +6,8 @@ from openai import OpenAI
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
 
-import uuid, time, json
+import uuid, time, json, requests, os, random
 from dotenv import load_dotenv
-
-import requests
 
 load_dotenv()
 
@@ -20,16 +18,56 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 # OpenAI API support
 # client = OpenAI(api_key=settings.openapi_key)
 client = OpenAI()
-model = "gpt-3.5-turbo"
+MODEL = "gpt-3.5-turbo"
 
 # AWS DynamoDB support
 dynamodb = boto3.resource('dynamodb', region_name="us-east-1")
 itinerary_table = dynamodb.Table('Itineraries')
 
 # HTTP codes
-http_ok = 200
-http_created = 201
-http_bad_request = 400
+HTTP_OK = 200
+HTTP_CREATED = 201
+HTTP_BAD_REQUEST = 400
+HTTP_INTERNAL_SERVER_ERROR = 500,
+HTTP_NOT_IMPLEMENTED = 501
+
+# Video analysis metadata
+NUM_FRAMES_TO_SAMPLE = 3
+
+'''
+API calls setups
+'''
+
+# Get the first completion of the call
+def openai_api_call(user_prompt, system_prompt):
+    # Generate an itinerary from OpenAI
+    completion = client.chat.completions.create(
+        model = MODEL,
+        response_format={"type": "json_object"},
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
+        ]
+    )
+    return str(completion.choices[0].message.content)
+
+# Get a response from video analysis API
+def video_analysis_call(videos, dev=False):
+    api_json = json.dumps({
+        "video_urls": videos,
+        "num_frames_to_sample": NUM_FRAMES_TO_SAMPLE
+    })
+    url = os.environ["VIDEO_ANALYSIS_DEV_URL"] if dev==True else os.environ["VIDEO_ANALYSIS_PROD_URL"]
+    response = requests.post(
+        url=url,
+        headers={'Content-Type': 'application/json'},
+        data=api_json
+    )
+    return response
+
+'''
+ROUTES
+'''
 
 '''
 Use this call to test connection
@@ -37,56 +75,62 @@ Use this call to test connection
 @app.route("/")
 @cross_origin()
 def index():
-    return jsonify("Hello world"), http_ok
+    return jsonify("Hello world"), HTTP_OK
 
-'''
-In theory, should be deprecated soon. Please use generate_itinerary_v2
-'''
-@app.route("/generate_itinerary", methods=['GET'])
+@app.route('/get_itinerary', methods=['GET'])
+@cross_origin()
+def get_itinerary():
+    # Process params
+    id = request.args.get('uuid')
+    if id == "":
+        return "Error: You must specify an UUID.", HTTP_BAD_REQUEST
+    fields = request.args.get('fields')
+    if fields == "":
+        return "Error: You must specify fields.", HTTP_BAD_REQUEST
+    
+    # Get a response from DynamoDB
+    response = itinerary_table.query(
+        KeyConditionExpression=Key('id').eq(id),
+        ProjectionExpression=fields
+    )
+
+    return response['Items'][0], HTTP_OK
+
+@app.route("/generate_itinerary", methods=['POST'])
 @cross_origin()
 def generate_itinerary():
-    user_prompt = request.args.get("prompt")
-    if user_prompt == "":
-        return jsonify("Error: No prompt found"), http_bad_request
+    # Process arguments
+    args_user_prompt = request.args.get("prompt")
+    if args_user_prompt == "":
+        return jsonify("Error: No prompt found"), HTTP_BAD_REQUEST
+    videos = request.args.get('video_urls').split(',')
     
-    system_prompt_file = open("./prompts/one_day_prompt_system_json.txt", "r")
+    # If videos have more than 5, take 5 random ones
+    if(len(videos) > 5):
+        videos = random.sample(videos, 5)
+
+    # Video processing 
+    video_summary = "The user have not specified any videos."
+    if len(videos) != 0:
+        response = video_analysis_call(videos, dev=True)
+        print("CALL OK")
+        if response.status_code == HTTP_OK:
+            print(response.json())
+            video_summary = str(response.json()['video_analysis'])
+            print(video_summary)
+        else:
+            return "Error with video analysis", HTTP_INTERNAL_SERVER_ERROR
+        
+    # Create system and user prompt
+    system_prompt_file = open("./prompts/system_prompt_vid_analysis.txt", "r")
     system_prompt = system_prompt_file.read()
 
-    completion = client.chat.completions.create(
-        model = model,
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-    )
+    user_prompt_file = open("./prompts/prompt_with_vid_analysis.txt", "r")
+    user_prompt_template = user_prompt_file.read()
+    user_prompt = user_prompt_template.replace("<user_prompt>", args_user_prompt).replace("<video_analysis>", video_summary)
 
-    return completion.choices[0].message.content, http_created
-
-'''
-Returns a single STRING containing the UUID of the itinerary on the database
-'''
-@app.route("/generate_itinerary_v2", methods=['POST'])
-@cross_origin()
-def generate_itinerary_v2():
-    # Generate an itinerary from OpenAI
-    user_prompt = request.args.get("prompt")
-    if user_prompt == "":
-        return jsonify("Error: No prompt found"), http_bad_request
-
-    system_prompt_file = open("./prompts/one_day_prompt_system_json.txt", "r")
-    system_prompt = system_prompt_file.read()
-
-    completion = client.chat.completions.create(
-        model = model,
-        response_format={"type": "json_object"},
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
-        ]
-    )
-
-    itinerary = str(completion.choices[0].message.content)
+    # OpenAI API call
+    itinerary = openai_api_call(user_prompt, system_prompt)
 
     # Put the itinerary in DynamoDB, generating other fields
     itinerary_uuid = str(uuid.uuid4())
@@ -101,29 +145,10 @@ def generate_itinerary_v2():
         }
     )
 
-    return itinerary_uuid, http_created
-
-@app.route('/get_itinerary', methods=['GET'])
-@cross_origin()
-def get_itinerary():
-    # Process params
-    id = request.args.get('uuid')
-    if id == "":
-        return "Error: You must specify an UUID.", http_bad_request
-    fields = request.args.get('fields')
-    if fields == "":
-        return "Error: You must specify fields.", http_bad_request
-    
-    # Get a response from DynamoDB
-    response = itinerary_table.query(
-        KeyConditionExpression=Key('id').eq(id),
-        ProjectionExpression=fields
-    )
-
-    return response['Items'][0], http_ok
+    return itinerary_uuid, HTTP_CREATED
 
 
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=8080)

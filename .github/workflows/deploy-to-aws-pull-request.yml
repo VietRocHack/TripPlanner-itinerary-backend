@@ -64,6 +64,8 @@ jobs:
       run: |
         cd $HOSTING_DIR/$STAGE/
         echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env
+        echo "VIDEO_ANALYSIS_PROD_URL=${{ secrets.VIDEO_ANALYSIS_PROD_URL }}" >> .env
+        echo "VIDEO_ANALYSIS_DEV_URL=${{ secrets.VIDEO_ANALYSIS_DEV_URL }}" >> .env
     
     - name: Reload/start WSGI service
       run: |
