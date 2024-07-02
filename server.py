@@ -115,7 +115,9 @@ def generate_itinerary():
         response = video_analysis_call(videos, dev=True)
         print("CALL OK")
         if response.status_code == HTTP_OK:
-            video_summary = str(response.json())
+            print(response.json())
+            video_summary = str(response.json()['video_analysis'])
+            print(video_summary)
         else:
             return "Error with video analysis", HTTP_INTERNAL_SERVER_ERROR
         
