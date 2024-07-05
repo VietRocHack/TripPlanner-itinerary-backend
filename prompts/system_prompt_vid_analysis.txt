@@ -17,8 +17,8 @@ Output ONLY a single day plan, which is a list of activities, each activity in a
         "startTime": <the starting time of the activity, described in the format XX:XX in 24 hour time. Times should end in either :00, :15, :30 or :45>,
         "endTime": <the ending time of the activity, described in the format XX:XX in 24 hour time. Times should end in either :00, :15, :30 or :45>,
         "activity": <the activity itself, described in no longer than 5 words>,
-        "location": <the location of the activity, which should be a precise location>,
-        "inspiredBy": <an object showcasing the TikTok video this activity is inspired by. If this activity is not inspired by any video, return null for this key {
+        "location": <the location of the activity, which should be a precise location. Make sure that this is valid and accurate.   >,
+        "inspiredBy": <an object showcasing the TikTok video this activity is inspired by. This MUST be a specific activity, with exact place and location If this activity is not inspired by any video, return null for this key {
             "explanation": <the reason you chose this particular activity in the video>,
             "video_url": <the URL of the video you chose. ONLY output an URL, and it MUST be an URL from the list given by the user>
         }>

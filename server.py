@@ -13,7 +13,7 @@ load_dotenv()
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+# app.config['CORS_HEADERS'] = 'Content-Type'
 
 # OpenAI API support
 # client = OpenAI(api_key=settings.openapi_key)
@@ -68,17 +68,14 @@ def video_analysis_call(videos, dev=False):
 '''
 ROUTES
 '''
-
 '''
 Use this call to test connection
 '''
 @app.route("/")
-@cross_origin()
 def index():
     return jsonify("Hello world"), HTTP_OK
 
 @app.route('/get_itinerary', methods=['GET'])
-@cross_origin()
 def get_itinerary():
     # Process params
     id = request.args.get('uuid')
@@ -97,7 +94,6 @@ def get_itinerary():
     return response['Items'][0], HTTP_OK
 
 @app.route("/generate_itinerary", methods=['POST'])
-@cross_origin()
 def generate_itinerary():
     # Process arguments
     args_user_prompt = request.args.get("prompt")
@@ -113,7 +109,8 @@ def generate_itinerary():
     video_summary = "The user have not specified any videos."
     if len(videos) != 0:
         response = video_analysis_call(videos, dev=True)
-        print("CALL OK")
+        print(response.status_code)
+        print(response.text)
         if response.status_code == HTTP_OK:
             print(response.json())
             video_summary = str(response.json()['video_analysis'])
