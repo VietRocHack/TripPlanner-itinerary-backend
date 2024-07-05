@@ -13,7 +13,7 @@ load_dotenv()
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+# app.config['CORS_HEADERS'] = 'Content-Type'
 
 # OpenAI API support
 # client = OpenAI(api_key=settings.openapi_key)
@@ -73,12 +73,10 @@ ROUTES
 Use this call to test connection
 '''
 @app.route("/")
-@cross_origin()
 def index():
     return jsonify("Hello world"), HTTP_OK
 
 @app.route('/get_itinerary', methods=['GET'])
-@cross_origin()
 def get_itinerary():
     # Process params
     id = request.args.get('uuid')
@@ -97,7 +95,6 @@ def get_itinerary():
     return response['Items'][0], HTTP_OK
 
 @app.route("/generate_itinerary", methods=['POST'])
-@cross_origin()
 def generate_itinerary():
     # Process arguments
     args_user_prompt = request.args.get("prompt")
