@@ -109,7 +109,7 @@ def generate_itinerary():
     # Video processing 
     video_summary = "The user have not specified any videos."
     if len(videos) != 0:
-        response = video_analysis_call(videos, dev=True)
+        response = video_analysis_call(videos, dev=False)
         print("CALL OK")
         if response.status_code == HTTP_OK:
             print(response.json())
